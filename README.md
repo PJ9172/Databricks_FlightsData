@@ -1,7 +1,7 @@
 
 # 🛫 Databricks Flights Data Pipeline Project
 
-This is an **end-to-end data engineering project** on Databricks that demonstrates the modern **medallion architecture** — processing raw airline data through Bronze, Silver, and Gold layers using Delta Lake, Auto Loader, and SQL transformations.
+This is an **end-to-end data engineering project** on Databricks that demonstrates the modern **medallion architecture** — processing raw airline data through Bronze, Silver, and Gold layers using Delta Lake, Auto Loader, DBT, and dynamic notebooks for dimension and fact modeling.
 
 > 🎥 [Watch Demo Video](https://youtu.be/vT7Oeu7WqHg?si=ujHz9mqmH2TD_l3H)  
 > 📂 [GitHub Repo](https://github.com/PJ9172/Databricks_FlightsData.git)
@@ -21,6 +21,7 @@ This pipeline follows the **Lakehouse Architecture**:
 - Ingest raw data into **Bronze Layer**
 - Transform and clean into **Silver Layer**
 - Create dimensional and aggregated tables in the **Gold Layer**
+- Use **DBT for analytics modeling** and **dynamic notebooks** for building **dimensions and facts**
 
 ---
 
@@ -39,10 +40,25 @@ This pipeline follows the **Lakehouse Architecture**:
            │ Silver Layer│  <- Cleaned and Joined DataFrames
            └────┬────────┘
                 ▼
-          ┌────────────┐
-          │ Gold Layer │  <- Final Fact/Dim Tables for BI
-          └────────────┘
+         ┌──────────────────┐
+         │ Gold Layer (DBT) │  <- Fact & Dim Models (SCD Type 1)
+         └────┬─────────────┘
+              ▼
+    ┌────────────────────────────┐
+    │ Dynamic Notebooks for Facts│
+    │ and Dimensions (SCD Type 1)│
+    └────────────────────────────┘
 ```
+
+---
+
+## 🧠 Key Features
+
+- ✅ **Auto Loader** for schema inference and file ingestion
+- ✅ **Dynamic Dimension Builder**: Generates dimension tables with upsert logic
+- ✅ **Dynamic Fact Builder**: Builds fact tables from Silver layer dynamically
+- ✅ **SCD Type 1** implementation using `MERGE` in Delta Lake
+- ✅ **DBT Integration** for analytical modeling and reproducibility
 
 ---
 
@@ -61,6 +77,8 @@ flight/
 │   └── Tables (6)
 ├── gold/
 │   └── Tables (4)
+├── dbt_pjagtap/
+│   └── my_first_dbt_model/
 └── information_schema/
 ```
 
@@ -72,21 +90,11 @@ flight/
 ## ⚙️ Technologies Used
 
 - **Databricks Community Edition**
-- **Delta Lake**
+- **Delta Lake & Unity Catalog**
 - **PySpark & SQL**
 - **Auto Loader (Streaming Ingestion)**
-- **Medallion Architecture (Bronze → Silver → Gold)**
-- **Unity Catalog (Structured Tables)**
-
----
-
-## 📌 Features
-
-- ✅ Automatic schema inference and evolution with Auto Loader
-- ✅ Layered transformation logic (raw → bronze → silver → gold)
-- ✅ Cleaned joins between customers, flights, airports, and bookings
-- ✅ Aggregated Gold tables ready for reporting
-- ✅ Catalog integration using Unity Catalog volumes and tables
+- **Dynamic Notebooks (Dimension + Fact Builder)**
+- **DBT (Data Build Tool)**
 
 ---
 
@@ -104,7 +112,21 @@ git clone https://github.com/PJ9172/Databricks_FlightsData.git
 
 3. Upload the raw data to `dbfs:/Volumes/flight/rawdata/`.
 
-4. Start from Bronze ingestion → Silver transformation → Gold layer creation.
+4. Run the **Bronze ingestion notebook** → **Silver transformations** → **Dynamic dimension/fact builders** → **DBT models**.
+
+---
+
+## 🧪 Dynamic Notebooks Logic
+
+### 🔷 Dimension Builder
+- Reads mapping configs to identify dimension tables
+- Performs **UPSERT (SCD Type 1)** using `MERGE INTO`
+- Automatically handles new & updated records
+
+### 🔶 Fact Builder
+- Joins cleaned Silver tables
+- Generates fact tables with reference keys
+- Supports partitioning & optimized Delta writes
 
 ---
 
